@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 Gold Chase — Cubs · Red Sox · Cardinals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#10161f;
+    --panel:#171f2b;
+    --row:#1c2634;
+    --row-hi:#232f40;
+    --line:#2b3646;
+    --ink:#ede6d6;
+    --muted:#8a93a2;
+    --gold:#e9b949;
+    --gold-deep:#c69214;
+    --gold-soft:rgba(233,185,73,.14);
+    --comc:#6cb2e0;
+    --comc-soft:rgba(108,178,224,.16);
+    --binder:#6ec177;
+    --binder-soft:rgba(110,193,119,.16);
+    --chc:#0e3386;
+    --bos:#bd3039;
+    --stl:#c41e3a;
+    --cond:'Oswald','Arial Narrow','Roboto Condensed',sans-serif;
+    --sans:ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--night);color:var(--ink);
+    font-family:var(--sans);line-height:1.45;padding:0 0 64px}
+  .wrap{max-width:860px;margin:0 auto;padding:0 16px}
+
+  /* Scoreboard hero */
+  .board{margin-top:20px;border:1px solid var(--line);border-radius:14px;
+    background:
+      radial-gradient(120% 140% at 85% -20%, rgba(233,185,73,.10), transparent 60%),
+      linear-gradient(180deg,#131b26,#0e141d);
+    padding:22px 20px 20px;position:relative;overflow:hidden}
+  .board:before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(90deg,transparent 0 22px,rgba(255,255,255,.012) 22px 23px)}
+  .kicker{font-family:var(--cond);font-weight:500;letter-spacing:.02em;color:var(--gold);
+    font-size:14px;margin:0 0 2px}
+  h1{font-family:var(--cond);font-weight:600;letter-spacing:.01em;margin:0;
+    font-size:clamp(24px,6vw,34px);line-height:1.04}
+  .sub{color:var(--muted);font-size:13.5px;margin:8px 0 0;max-width:62ch}
+  .count{display:flex;align-items:baseline;gap:10px;margin:18px 0 4px;font-family:var(--cond)}
+  .count .big{font-size:clamp(46px,15vw,76px);font-weight:700;color:var(--gold);
+    line-height:.9;font-variant-numeric:tabular-nums;text-shadow:0 1px 0 rgba(0,0,0,.4)}
+  .count .of{font-size:clamp(20px,5vw,26px);color:var(--muted);font-weight:400}
+  .count .word{margin-left:auto;font-size:14px;color:var(--muted);font-weight:400;
+    align-self:flex-end;padding-bottom:6px}
+  .meter{height:12px;border-radius:7px;background:#0c121a;border:1px solid var(--line);
+    overflow:hidden;margin-top:6px}
+  .meter>span{display:block;height:100%;width:0;border-radius:6px;
+    background:linear-gradient(90deg,var(--gold-deep),var(--gold));transition:width .5s ease}
+  .subcounts{display:flex;gap:18px;margin-top:12px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+  .subcounts b{font-variant-numeric:tabular-nums}
+  .subcounts .c b{color:var(--comc)} .subcounts .b b{color:var(--binder)}
+  .subcounts .dotmk{display:inline-block;width:8px;height:8px;border-radius:50%;
+    margin-right:6px;vertical-align:middle}
+  .subcounts .c .dotmk{background:var(--comc)} .subcounts .b .dotmk{background:var(--binder)}
+
+  /* Toolbar */
+  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0 4px}
+  .filters{display:flex;flex-wrap:wrap;gap:6px;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:4px}
+  .filters button{font-family:var(--sans);font-size:13px;color:var(--muted);background:transparent;
+    border:0;border-radius:7px;padding:6px 12px;cursor:pointer;font-weight:600}
+  .filters button[aria-pressed="true"]{background:var(--gold-soft);color:var(--gold)}
+  .spacer{flex:1 1 auto}
+  .util{display:flex;gap:6px}
+  .util button, .util label{font-size:12.5px;color:var(--muted);background:var(--panel);
+    border:1px solid var(--line);border-radius:8px;padding:7px 11px;cursor:pointer;
+    font-weight:600;font-family:var(--sans)}
+  .util button:hover,.util label:hover{color:var(--ink);border-color:var(--gold-deep)}
+  .util input[type=file]{display:none}
+
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:14px 4px 0;font-size:12px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend i{width:9px;height:9px;border-radius:3px;display:inline-block}
+  .legend .g i{background:var(--gold)} .legend .c i{background:var(--comc)}
+  .legend .b i{background:var(--binder)}
+
+  /* Team section */
+  .team{margin-top:18px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel)}
+  .team-head{display:flex;align-items:center;gap:12px;padding:13px 15px;
+    border-left:5px solid var(--stripe);position:sticky;top:0;z-index:2;
+    background:linear-gradient(180deg,#1a2333,#161e2a)}
+  .team-name{font-family:var(--cond);font-weight:600;font-size:20px;letter-spacing:.01em}
+  .team-prog{margin-left:auto;display:flex;align-items:center;gap:10px;min-width:150px}
+  .team-prog .frac{font-family:var(--cond);font-size:16px;color:var(--muted);
+    font-variant-numeric:tabular-nums;white-space:nowrap}
+  .team-prog .frac b{color:var(--gold);font-weight:600}
+  .mini{flex:1;height:7px;border-radius:5px;background:#0c121a;border:1px solid var(--line);overflow:hidden}
+  .mini>span{display:block;height:100%;background:var(--stripe);transition:width .45s ease}
+
+  /* Rows */
+  .card{display:flex;align-items:center;gap:11px 12px;padding:11px 15px;
+    border-top:1px solid var(--line);transition:background .12s;flex-wrap:wrap}
+  .card:hover{background:var(--row-hi)}
+  .card.done{background:linear-gradient(90deg,var(--gold-soft),transparent 60%)}
+  .num{font-family:var(--cond);font-size:13px;font-weight:600;color:var(--ink);
+    background:var(--row);border:1px solid var(--line);border-radius:6px;
+    padding:3px 7px;min-width:46px;text-align:center;font-variant-numeric:tabular-nums;flex:none}
+  .who{flex:1 1 160px;min-width:0}
+  .who .nm{font-size:15px;font-weight:600;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .who .nm .key{color:var(--gold);font-size:12px;flex:none}
+  .spnote{display:block;font-size:10.5px;color:var(--muted);margin-top:3px;font-style:italic}
+  .card.spcard{background:linear-gradient(90deg,rgba(198,146,20,.06),transparent 55%)}
+  .card.spcard.done{background:linear-gradient(90deg,rgba(198,146,20,.16),transparent 60%)}
+  .tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}
+  .tag{font-size:10.5px;font-weight:700;letter-spacing:.03em;color:var(--muted);
+    border:1px solid var(--line);border-radius:5px;padding:1px 5px;text-transform:uppercase}
+  .tag.sp{color:var(--gold);border-color:var(--gold-deep)}
+  .serial{width:96px;flex:none;background:var(--night);border:1px solid var(--line);
+    color:var(--ink);border-radius:7px;padding:6px 8px;font-size:12px;font-family:var(--sans)}
+  .serial::placeholder{color:#5c6675}
+  .serial:disabled{opacity:.35}
+
+  .status{display:flex;gap:6px;flex:none}
+  .chip{font-family:var(--sans);font-size:12px;font-weight:700;color:var(--muted);
+    background:var(--night);border:1px solid var(--line);border-radius:8px;
+    padding:7px 10px;cursor:pointer;white-space:nowrap;transition:color .12s,border-color .12s,background .12s}
+  .chip:hover{color:var(--ink)}
+  .chip .st{margin-right:2px}
+  .chip[data-kind="have"][aria-pressed="true"]{color:var(--gold);border-color:var(--gold-deep);background:var(--gold-soft)}
+  .chip[data-kind="comc"][aria-pressed="true"]{color:var(--comc);border-color:var(--comc);background:var(--comc-soft)}
+  .chip[data-kind="binder"][aria-pressed="true"]{color:var(--binder);border-color:var(--binder);background:var(--binder-soft)}
+  .chip[data-kind="comc"][aria-pressed="true"] .st:before,
+  .chip[data-kind="binder"][aria-pressed="true"] .st:before{content:"✓ "}
+  .chip:active{transform:scale(.96)}
+
+  .foot{color:var(--muted);font-size:12.5px;margin:22px 4px 0;line-height:1.6}
+  .foot b{color:var(--ink);font-weight:600}
+  .hidden{display:none !important}
+
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*{transition:none !important}}
+  @media (max-width:560px){
+    .who{flex-basis:100%;order:1}
+    .num{order:0}
+    .serial{order:0;margin-left:auto}
+    .status{order:2;flex-basis:100%;justify-content:flex-start}
+    .count .word{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="board">
+    <p class="kicker">Topps flagship · Gold /2026 parallels</p>
+    <h1>The 2026 Gold Chase</h1>
+    <p class="sub">Every Cubs, Red Sox, and Cardinals base card in Gold /2026 — the birth-year set. Mark Gold when you land the card, then track where it lives: on COMC or filed in the binder. Progress saves in this browser.</p>
+    <div class="count">
+      <span class="big" id="haveTotal">0</span>
+      <span class="of">/ <span id="grandTotal">109</span> Gold</span>
+      <span class="word" id="pctWord">0% complete</span>
+    </div>
+    <div class="meter"><span id="meterFill"></span></div>
+    <div class="subcounts">
+      <span class="c"><span class="dotmk"></span><b id="comcTotal">0</b>&nbsp;on COMC</span>
+      <span class="b"><span class="dotmk"></span><b id="binderTotal">0</b>&nbsp;in binder</span>
+    </div>
+  </header>
+
+  <div class="bar">
+    <div class="filters" role="group" aria-label="Filter cards">
+      <button data-filter="all" aria-pressed="true">All</button>
+      <button data-filter="need" aria-pressed="false">Still needed</button>
+      <button data-filter="have" aria-pressed="false">Have Gold</button>
+      <button data-filter="comc" aria-pressed="false">On COMC</button>
+      <button data-filter="binder" aria-pressed="false">In binder</button>
+    </div>
+    <span class="spacer"></span>
+    <div class="util">
+      <button id="exportBtn" title="Download your progress as a backup file">Export</button>
+      <label title="Load a previously exported file">Import<input type="file" id="importFile" accept="application/json"></label>
+      <button id="resetBtn" title="Clear all tracking">Reset</button>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span class="g"><i></i>Gold — you own the card</span>
+    <span class="c"><i></i>COMC — sitting in your COMC account</span>
+    <span class="b"><i></i>Binder — filed at home</span>
+  </div>
+
+  <main id="teams"></main>
+
+  <p class="foot">
+    <b>★ marks the marquee Golds</b> — the priciest, hardest cards of each set. Cubs: Pete Crow-Armstrong (#196) and Seiya Suzuki (#685). Red Sox: Roman Anthony RC (#189) and Alex Bregman (#135). Cardinals: Nolan Arenado (#193) and Masyn Winn (#526).<br>
+    The three columns are independent, so a card can be Gold + COMC while you wait to ship, then Gold + Binder once it's filed. Use <b>On COMC</b> to see everything staged for your next shipment, and <b>In binder</b> to see what's physically home.<br>
+    The Cardinals <b>#698 JJ Wetherholt</b> (flagship) is a short-print variation with <b>no Gold parallel</b>, tracked with its own SP toggle outside the Gold set — but Wetherholt <b>does</b> have Gold /2026 cards in Update (US50 · US176 · US245). Your Gold set is <b>109</b> (Cubs 32 · Red Sox 44 · Cardinals 33).<br>
+    <b>Update roster moves:</b> Alex Bregman joined the Cubs (US25); Sonny Gray and Willson Contreras joined the Red Sox (US199 · US290) — so they now appear on two of your team sets across the year. Arenado and Owen Caissie left your teams, so they have no Update Gold. Export a backup now and then; your tracking lives in this browser only.
+  </p>
+</div>
+
+<script>
+const CARDS = [
+  // Chicago Cubs (22)
+  {id:"CHC-5",t:"CHC",s:"S1",n:"5",p:"Nico Hoerner"},
+  {id:"CHC-27",t:"CHC",s:"S1",n:"27",p:"Matt Shaw"},
+  {id:"CHC-51",t:"CHC",s:"S1",n:"51",p:"Matthew Boyd"},
+  {id:"CHC-126c",t:"CHC",s:"S1",n:"126",p:"Pete Crow-Armstrong",tags:["combo"]},
+  {id:"CHC-158",t:"CHC",s:"S1",n:"158",p:"Daniel Palencia"},
+  {id:"CHC-178",t:"CHC",s:"S1",n:"178",p:"Shota Imanaga"},
+  {id:"CHC-196",t:"CHC",s:"S1",n:"196",p:"Pete Crow-Armstrong",key:true},
+  {id:"CHC-233",t:"CHC",s:"S1",n:"233",p:"Owen Caissie",tags:["rc"]},
+  {id:"CHC-320",t:"CHC",s:"S1",n:"320",p:"Cubs Team Card",tags:["team"]},
+  {id:"CHC-348",t:"CHC",s:"S1",n:"348",p:"Michael Busch"},
+  {id:"CHC-374",t:"CHC",s:"S2",n:"374",p:"Kevin Alcántara",tags:["fs"]},
+  {id:"CHC-456",t:"CHC",s:"S2",n:"456",p:"Justin Dean",tags:["rc"]},
+  {id:"CHC-486",t:"CHC",s:"S2",n:"486",p:"Justin Steele"},
+  {id:"CHC-535",t:"CHC",s:"S2",n:"535",p:"Javier Assad"},
+  {id:"CHC-537",t:"CHC",s:"S2",n:"537",p:"Jameson Taillon"},
+  {id:"CHC-550",t:"CHC",s:"S2",n:"550",p:"Dansby Swanson"},
+  {id:"CHC-584",t:"CHC",s:"S2",n:"584",p:"Moisés Ballesteros",tags:["fs"]},
+  {id:"CHC-585",t:"CHC",s:"S2",n:"585",p:"Ian Happ"},
+  {id:"CHC-616",t:"CHC",s:"S2",n:"616",p:"Hoby Milner"},
+  {id:"CHC-632",t:"CHC",s:"S2",n:"632",p:"Cade Horton"},
+  {id:"CHC-685",t:"CHC",s:"S2",n:"685",p:"Seiya Suzuki",key:true},
+  {id:"CHC-686",t:"CHC",s:"S2",n:"686",p:"Carson Kelly"},
+  {id:"CHC-US25",t:"CHC",s:"UP",n:"US25",p:"Alex Bregman",tags:["traded"],key:true},
+  {id:"CHC-US27",t:"CHC",s:"UP",n:"US27",p:"Miguel Amaya"},
+  {id:"CHC-US33",t:"CHC",s:"UP",n:"US33",p:"Pete Crow-Armstrong",tags:["sh"]},
+  {id:"CHC-US43",t:"CHC",s:"UP",n:"US43",p:"Ben Brown"},
+  {id:"CHC-US166",t:"CHC",s:"UP",n:"US166",p:"Riley Martin",tags:["rc"]},
+  {id:"CHC-US182",t:"CHC",s:"UP",n:"US182",p:"Edward Cabrera"},
+  {id:"CHC-US222",t:"CHC",s:"UP",n:"US222",p:"Michael Conforto"},
+  {id:"CHC-US271",t:"CHC",s:"UP",n:"US271",p:"Colin Rea"},
+  {id:"CHC-US325",t:"CHC",s:"UP",n:"US325",p:"Bregman / Swanson",tags:["combo"]},
+  {id:"CHC-US329",t:"CHC",s:"UP",n:"US329",p:"Christian Roa",tags:["rc"]},
+  // Boston Red Sox (26)
+  {id:"BOS-15",t:"BOS",s:"S1",n:"15",p:"Payton Tolle",tags:["rc"]},
+  {id:"BOS-53",t:"BOS",s:"S1",n:"53",p:"Garrett Crochet"},
+  {id:"BOS-65",t:"BOS",s:"S1",n:"65",p:"Masataka Yoshida"},
+  {id:"BOS-101",t:"BOS",s:"S1",n:"101",p:"Ceddanne Rafaela"},
+  {id:"BOS-125",t:"BOS",s:"S1",n:"125",p:"Kristian Campbell",tags:["fs"]},
+  {id:"BOS-135",t:"BOS",s:"S1",n:"135",p:"Alex Bregman",key:true},
+  {id:"BOS-177",t:"BOS",s:"S1",n:"177",p:"Brayan Bello"},
+  {id:"BOS-189",t:"BOS",s:"S1",n:"189",p:"Roman Anthony",tags:["rc"],key:true},
+  {id:"BOS-198",t:"BOS",s:"S1",n:"198",p:"Red Sox Team Card",tags:["team"]},
+  {id:"BOS-253",t:"BOS",s:"S1",n:"253",p:"Lucas Giolito"},
+  {id:"BOS-260c",t:"BOS",s:"S1",n:"260",p:"Roman Anthony",tags:["combo"]},
+  {id:"BOS-269",t:"BOS",s:"S1",n:"269",p:"Marcelo Mayer",tags:["fs"]},
+  {id:"BOS-294",t:"BOS",s:"S1",n:"294",p:"Romy Gonzalez"},
+  {id:"BOS-316",t:"BOS",s:"S1",n:"316",p:"Jhostynxon Garcia",tags:["rc"]},
+  {id:"BOS-344",t:"BOS",s:"S1",n:"344",p:"Carlos Narváez"},
+  {id:"BOS-440",t:"BOS",s:"S2",n:"440",p:"Ranger Suárez"},
+  {id:"BOS-464",t:"BOS",s:"S2",n:"464",p:"Triston Casas"},
+  {id:"BOS-501",t:"BOS",s:"S2",n:"501",p:"Connelly Early",tags:["rc"]},
+  {id:"BOS-504",t:"BOS",s:"S2",n:"504",p:"Tanner Houck"},
+  {id:"BOS-536",t:"BOS",s:"S2",n:"536",p:"Trevor Story"},
+  {id:"BOS-544",t:"BOS",s:"S2",n:"544",p:"Kutter Crawford"},
+  {id:"BOS-560",t:"BOS",s:"S2",n:"560",p:"Jarren Duran"},
+  {id:"BOS-576c",t:"BOS",s:"S2",n:"576",p:"Jarren Duran",tags:["combo"]},
+  {id:"BOS-653",t:"BOS",s:"S2",n:"653",p:"Andruw Monasterio"},
+  {id:"BOS-656",t:"BOS",s:"S2",n:"656",p:"Aroldis Chapman"},
+  {id:"BOS-677",t:"BOS",s:"S2",n:"677",p:"Wilyer Abreu"},
+  {id:"BOS-US4",t:"BOS",s:"UP",n:"US4",p:"Garrett Whitlock"},
+  {id:"BOS-US73",t:"BOS",s:"UP",n:"US73",p:"Caleb Durbin"},
+  {id:"BOS-US87",t:"BOS",s:"UP",n:"US87",p:"Zack Kelly"},
+  {id:"BOS-US110",t:"BOS",s:"UP",n:"US110",p:"Connor Wong"},
+  {id:"BOS-US199",t:"BOS",s:"UP",n:"US199",p:"Sonny Gray",tags:["traded"],key:true},
+  {id:"BOS-US290",t:"BOS",s:"UP",n:"US290",p:"Willson Contreras",tags:["traded"],key:true},
+  {id:"BOS-US90",t:"BOS",s:"UP",n:"US90",p:"Tyler Uberstine",tags:["rc"]},
+  {id:"BOS-US98",t:"BOS",s:"UP",n:"US98",p:"Alec Gamboa",tags:["rc"]},
+  {id:"BOS-US146",t:"BOS",s:"UP",n:"US146",p:"Jack Anderson",tags:["rc"]},
+  {id:"BOS-US202",t:"BOS",s:"UP",n:"US202",p:"Jedixson Paez",tags:["rc"]},
+  {id:"BOS-US207",t:"BOS",s:"UP",n:"US207",p:"Tyler Samaniego",tags:["rc"]},
+  {id:"BOS-US208",t:"BOS",s:"UP",n:"US208",p:"Ryan Watson",tags:["rc"]},
+  {id:"BOS-US302",t:"BOS",s:"UP",n:"US302",p:"Jake Bennett",tags:["rc"]},
+  {id:"BOS-US324",t:"BOS",s:"UP",n:"US324",p:"Eduardo Rivera",tags:["rc"]},
+  {id:"BOS-US133",t:"BOS",s:"UP",n:"US133",p:"Payton Tolle",tags:["rc"]},
+  {id:"BOS-US285",t:"BOS",s:"UP",n:"US285",p:"Connelly Early",tags:["rc"]},
+  {id:"BOS-US341",t:"BOS",s:"UP",n:"US341",p:"Jake Bennett",tags:["rc"]},
+  {id:"BOS-US247",t:"BOS",s:"UP",n:"US247",p:"Anthony / Contreras",tags:["combo"]},
+  // St. Louis Cardinals (22 + SP)
+  {id:"STL-24",t:"STL",s:"S1",n:"24",p:"Nathan Church",tags:["rc"]},
+  {id:"STL-26",t:"STL",s:"S1",n:"26",p:"Brendan Donovan"},
+  {id:"STL-40",t:"STL",s:"S1",n:"40",p:"Sonny Gray"},
+  {id:"STL-73",t:"STL",s:"S1",n:"73",p:"Jimmy Crooks",tags:["rc"]},
+  {id:"STL-95",t:"STL",s:"S1",n:"95",p:"César Prieto",tags:["rc"]},
+  {id:"STL-161",t:"STL",s:"S1",n:"161",p:"Michael McGreevy"},
+  {id:"STL-180",t:"STL",s:"S1",n:"180",p:"Willson Contreras"},
+  {id:"STL-193",t:"STL",s:"S1",n:"193",p:"Nolan Arenado",key:true},
+  {id:"STL-221",t:"STL",s:"S1",n:"221",p:"Victor Scott II"},
+  {id:"STL-280",t:"STL",s:"S1",n:"280",p:"Pedro Pagés"},
+  {id:"STL-353",t:"STL",s:"S2",n:"353",p:"Cardinals Team Card",tags:["team"]},
+  {id:"STL-385",t:"STL",s:"S2",n:"385",p:"Nick Raquet",tags:["rc"]},
+  {id:"STL-441",t:"STL",s:"S2",n:"441",p:"Lars Nootbaar"},
+  {id:"STL-497",t:"STL",s:"S2",n:"497",p:"Kyle Leahy"},
+  {id:"STL-526",t:"STL",s:"S2",n:"526",p:"Masyn Winn"},
+  {id:"STL-565",t:"STL",s:"S2",n:"565",p:"Jordan Walker"},
+  {id:"STL-567",t:"STL",s:"S2",n:"567",p:"Thomas Saggese",tags:["fs"]},
+  {id:"STL-573",t:"STL",s:"S2",n:"573",p:"Alec Burleson"},
+  {id:"STL-587",t:"STL",s:"S2",n:"587",p:"Nolan Gorman"},
+  {id:"STL-612",t:"STL",s:"S2",n:"612",p:"José Fermín"},
+  {id:"STL-621",t:"STL",s:"S2",n:"621",p:"Matthew Liberatore"},
+  {id:"STL-698",t:"STL",s:"S2",n:"698",p:"Andre Pallante"},
+  {id:"STL-US231",t:"STL",s:"UP",n:"US231",p:"Iván Herrera"},
+  {id:"STL-US28",t:"STL",s:"UP",n:"US28",p:"JoJo Romero"},
+  {id:"STL-US31",t:"STL",s:"UP",n:"US31",p:"Dustin May"},
+  {id:"STL-US288",t:"STL",s:"UP",n:"US288",p:"Ramón Urías"},
+  {id:"STL-US348",t:"STL",s:"UP",n:"US348",p:"Yohel Pozo"},
+  {id:"STL-US50",t:"STL",s:"UP",n:"US50",p:"JJ Wetherholt",tags:["rc"],key:true},
+  {id:"STL-US85",t:"STL",s:"UP",n:"US85",p:"Riley O'Brien",tags:["rc"]},
+  {id:"STL-US209",t:"STL",s:"UP",n:"US209",p:"Matt Pushard",tags:["rc"]},
+  {id:"STL-US245",t:"STL",s:"UP",n:"US245",p:"JJ Wetherholt",tags:["rc"]},
+  {id:"STL-US176",t:"STL",s:"UP",n:"US176",p:"Winn / Wetherholt",tags:["combo"]},
+  {id:"STL-US149",t:"STL",s:"UP",n:"US149",p:"Iván Herrera",tags:["sh"]},
+  {id:"STL-698sp",t:"STL",s:"S2",n:"698",p:"JJ Wetherholt",tags:["sp"],nogold:true},
+];
+
+const TEAMS = [
+  {code:"CHC",name:"Chicago Cubs",stripe:"var(--chc)"},
+  {code:"BOS",name:"Boston Red Sox",stripe:"var(--bos)"},
+  {code:"STL",name:"St. Louis Cardinals",stripe:"var(--stl)"},
+];
+
+const TAG_LABEL = {rc:"RC",fs:"Future Stars",team:"Team Card",combo:"Combo",sp:"SP",traded:"Traded",sh:"Highlight"};
+const STORE_KEY = "gold2026-chase-v1";
+let state = {};
+let filter = "all";
+let memoryOnly = false;
+
+function load(){
+  try{ const raw = localStorage.getItem(STORE_KEY); state = raw ? JSON.parse(raw) : {}; }
+  catch(e){ state = {}; memoryOnly = true; }
+}
+function save(){
+  if(memoryOnly) return;
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch(e){ memoryOnly = true; }
+}
+function rec(id){
+  let r = state[id];
+  if(!r){ r = state[id] = {have:false, comc:false, binder:false, serial:""}; }
+  if(r.comc===undefined) r.comc=false;
+  if(r.binder===undefined) r.binder=false;
+  if(r.serial===undefined) r.serial="";
+  return r;
+}
+
+function build(){
+  const root = document.getElementById("teams");
+  root.innerHTML = "";
+  TEAMS.forEach(team=>{
+    const cards = CARDS.filter(c=>c.t===team.code);
+    const sec = document.createElement("section");
+    sec.className = "team";
+    sec.dataset.team = team.code;
+    sec.innerHTML = `
+      <div class="team-head" style="--stripe:${team.stripe}">
+        <span class="team-name">${team.name}</span>
+        <span class="team-prog">
+          <span class="mini"><span data-mini="${team.code}"></span></span>
+          <span class="frac"><b data-have="${team.code}">0</b>/<span>${cards.filter(c=>!c.nogold).length}</span></span>
+        </span>
+      </div>
+      <div class="rows"></div>`;
+    const rows = sec.querySelector(".rows");
+    cards.forEach(c=>{
+      const r = document.createElement("div");
+      r.className = "card";
+      r.dataset.id = c.id;
+      const keyStar = c.key ? `<span class="key" title="Marquee Gold">★</span>` : "";
+      const tags = (c.tags||[]).map(t=>`<span class="tag ${t==='sp'?'sp':''}">${TAG_LABEL[t]||t}</span>`).join("");
+      if(c.nogold) r.classList.add("spcard");
+      const spNote = c.nogold ? `<span class="spnote">SP variation — not part of the Gold set</span>` : "";
+      const firstLabel = c.nogold ? "SP" : "Gold";
+      const firstStar = c.nogold ? "" : "★";
+      const firstAria = c.nogold ? `Own the SP variation of ${c.p}` : `Own the Gold of ${c.p}`;
+      r.innerHTML = `
+        <span class="num">#${c.n}</span>
+        <span class="who">
+          <span class="nm">${c.p}${keyStar}</span>
+          <span class="tags"><span class="tag">${c.s}</span>${tags}</span>
+          ${spNote}
+        </span>
+        <input class="serial" type="text" inputmode="numeric" placeholder="serial #"
+               aria-label="Serial number for ${c.p}" data-serial="${c.id}">
+        <span class="status">
+          <button class="chip" data-kind="have" data-id="${c.id}" aria-pressed="false"
+                  aria-label="${firstAria}"><span class="st">${firstStar}</span>${firstLabel}</button>
+          <button class="chip" data-kind="comc" data-id="${c.id}" aria-pressed="false"
+                  aria-label="${c.p} is on COMC"><span class="st"></span>COMC</button>
+          <button class="chip" data-kind="binder" data-id="${c.id}" aria-pressed="false"
+                  aria-label="${c.p} is in the binder"><span class="st"></span>Binder</button>
+        </span>`;
+      rows.appendChild(r);
+    });
+    root.appendChild(sec);
+  });
+
+  root.addEventListener("click", e=>{
+    const chip = e.target.closest("[data-kind]");
+    if(!chip) return;
+    const id = chip.dataset.id, kind = chip.dataset.kind, r = rec(id);
+    r[kind] = !r[kind];
+    save(); syncCard(id); syncTotals(); applyFilter();
+  });
+  root.addEventListener("input", e=>{
+    const inp = e.target.closest("[data-serial]");
+    if(!inp) return;
+    rec(inp.dataset.serial).serial = inp.value;
+    save();
+  });
+}
+
+function syncCard(id){
+  const r = rec(id);
+  const row = document.querySelector(`.card[data-id="${id}"]`);
+  row.querySelectorAll("[data-kind]").forEach(chip=>{
+    chip.setAttribute("aria-pressed", r[chip.dataset.kind] ? "true":"false");
+  });
+  row.classList.toggle("done", r.have);
+  const inp = row.querySelector("[data-serial]");
+  inp.value = r.serial || "";
+  inp.disabled = !r.have;
+}
+
+function syncTotals(){
+  let grand=0, comc=0, binder=0, gtotal=CARDS.filter(c=>!c.nogold).length;
+  TEAMS.forEach(team=>{
+    const cards = CARDS.filter(c=>c.t===team.code && !c.nogold);
+    const have = cards.filter(c=>rec(c.id).have).length;
+    grand += have;
+    document.querySelector(`[data-have="${team.code}"]`).textContent = have;
+    document.querySelector(`[data-mini="${team.code}"]`).style.width = (have/cards.length*100)+"%";
+  });
+  CARDS.forEach(c=>{ const r=rec(c.id); if(r.comc)comc++; if(r.binder)binder++; });
+  document.getElementById("haveTotal").textContent = grand;
+  document.getElementById("grandTotal").textContent = gtotal;
+  document.getElementById("comcTotal").textContent = comc;
+  document.getElementById("binderTotal").textContent = binder;
+  const pct = Math.round(grand/gtotal*100);
+  document.getElementById("meterFill").style.width = pct+"%";
+  document.getElementById("pctWord").textContent = pct+"% complete";
+}
+
+function applyFilter(){
+  document.querySelectorAll(".card").forEach(row=>{
+    const r = rec(row.dataset.id);
+    let show = true;
+    if(filter==="need") show = !r.have;
+    else if(filter==="have") show = r.have;
+    else if(filter==="comc") show = r.comc;
+    else if(filter==="binder") show = r.binder;
+    row.classList.toggle("hidden", !show);
+  });
+  document.querySelectorAll(".team").forEach(sec=>{
+    sec.classList.toggle("hidden", !sec.querySelector(".card:not(.hidden)"));
+  });
+}
+
+document.querySelectorAll(".filters button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    filter = b.dataset.filter;
+    document.querySelectorAll(".filters button")
+      .forEach(x=>x.setAttribute("aria-pressed", x===b ? "true":"false"));
+    applyFilter();
+  });
+});
+
+document.getElementById("exportBtn").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "2026-gold-chase-progress.json";
+  a.click(); URL.revokeObjectURL(a.href);
+});
+document.getElementById("importFile").addEventListener("change", e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      Object.keys(data).forEach(id=>{ if(CARDS.some(c=>c.id===id)) state[id]=data[id]; });
+      save(); refreshAll();
+    }catch(err){ alert("That file couldn't be read. Pick a file exported from this tracker."); }
+    e.target.value = "";
+  };
+  reader.readAsText(file);
+});
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  if(!confirm("Clear all tracking — Gold, COMC, Binder, and serials? This can't be undone.")) return;
+  state = {}; save(); refreshAll();
+});
+
+function refreshAll(){ CARDS.forEach(c=>syncCard(c.id)); syncTotals(); applyFilter(); }
+
+load(); build(); refreshAll();
+</script>
+</body>
+</html>
